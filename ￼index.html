@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Articles Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; }
+        .main-header { background: #0f172a; color: #fff; text-align: center; padding: 25px 15px; position: relative; }
+        .logo { font-size: 1.8rem; font-weight: 700; }
+        .logo span { color: #38bdf8; }
+        .tagline { font-size: 0.85rem; color: #94a3b8; margin-top: 5px; }
+        .admin-btn-top { display: inline-block; margin-top: 10px; background: #38bdf8; color: #0f172a; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-decoration: none; }
+        .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; }
+        .articles-grid { display: flex; flex-direction: column; gap: 15px; flex: 2; }
+        .card { background: #ffffff; border-radius: 10px; padding: 18px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; }
+        .badge { background: #e0f2fe; color: #0369a1; font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; }
+        .card-title { font-size: 1.2rem; margin: 10px 0; color: #0f172a; }
+        .card-excerpt { font-size: 0.9rem; color: #64748b; line-height: 1.5; margin-bottom: 15px; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+        .views-count { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+        .read-btn { background: #0284c7; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
+        .sidebar { flex: 1; }
+        .widget { background: white; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+        .ad-placeholder { background: #f1f5f9; border: 2px dashed #cbd5e1; text-align: center; padding: 30px 10px; color: #94a3b8; margin-top: 8px; }
+        .ad-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
+        @media (min-width: 768px) { .container { flex-direction: row; } }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">Article<span>Hub</span></div>
+        <p class="tagline">Your daily destination for insightful articles and news</p>
+        <a href="admin.html" class="admin-btn-top">⚙️ Open Admin Panel</a>
+    </header>
+
+    <main class="container">
+        <section class="articles-grid" id="articlesContainer">
+            <p style="text-align: center; color: #64748b;">Loading articles...</p>
+        </section>
+
+        <aside class="sidebar">
+            <div class="widget">
+                <p class="ad-label">Advertisement</p>
+                <div class="ad-placeholder">Google Ads Space</div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        async function fetchArticles() {
+            try {
+                const res = await fetch('http://localhost:5000/api/articles');
+                const articles = await res.json();
+                const container = document.getElementById('articlesContainer');
+                
+                if(articles.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">No articles published yet. Post your first article from the Admin Panel!</p>';
+                    return;
+                }
+
+                container.innerHTML = articles.map(art => `
+                    <article class="card">
+                        <span class="badge">${art.category}</span>
+                        <h2 class="card-title">${art.title}</h2>
+                        <p class="card-excerpt">${art.excerpt}</p>
+                        <div class="card-footer">
+                            <span class="views-count">👁️ ${art.views} Views</span>
+                            <button class="read-btn" onclick="increaseView('${art.id}')">Read Article</button>
+                        </div>
+                    </article>
+                `).join('');
+            } catch (err) {
+                document.getElementById('articlesContainer').innerHTML = '<p style="color:red; text-align:center;">Server disconnected. Please start the server in Termux.</p>';
+            }
+        }
+
+        async function increaseView(id) {
+            await fetch(`http://localhost:5000/api/articles/${id}/view`, { method: 'PUT' });
+            fetchArticles();
+        }
+
+        fetchArticles();
+    </script>
+</body>
+</html>
