@@ -46,4 +46,5 @@ app.put('/api/articles/:id/view', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server Running on port ${PORT}`));
+// Old app.listen ko hata kar ye export likhein:
+module.exports = app;
